@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>내 전용 음악 플레이어</title>
+    <style>
+        /* 깔끔하고 현대적인 다크 테마 */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #0f172a; /* 짙은 네이비 배경 */
+            font-family: 'Pretendard', sans-serif;
+            color: #f1f5f9;
+        }
+
+        .player-box {
+            background: #1e293b;
+            padding: 40px;
+            border-radius: 25px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 320px;
+            border: 1px solid #334155;
+        }
+
+        /* 앨범 아트 (재생 시 회전) */
+        .disc {
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, #334155 20%, #1e293b 21%, #0ea5e9 100%);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 60px;
+            border: 8px solid #334155;
+            animation: spin 8s linear infinite;
+            animation-play-state: paused;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        h2 { margin: 0 0 10px; font-size: 1.5rem; color: #38bdf8; }
+        p { margin: 0 0 30px; color: #94a3b8; }
+
+        /* 진행 바 스타일 */
+        .progress-wrapper {
+            background: #334155;
+            height: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #38bdf8;
+            height: 100%;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        /* 컨트롤 버튼들 */
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+        }
+
+        button {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 24px;
+            transition: 0.2s;
+        }
+
+        button:hover { color: #38bdf8; transform: scale(1.1); }
+        
+        #play-pause { font-size: 45px; color: #f8fafc; }
+        
+        /* 한 곡 반복 활성화 상태 */
+        .repeat-on { color: #fb7185 !important; }
+    </style>
+</head>
+<body>
+
+<div class="player-box">
+    <div class="disc" id="disc">💿</div>
+    <h2>Now Playing</h2>
+    <p>바꾼 파일 이름으로 재생 중</p>
+
+    <audio id="audio" src="<audio src="music.mp3"></audio>"></audio>
+
+    <div class="progress-wrapper" id="progress-container">
+        <div class="progress-fill" id="progress-bar"></div>
+    </div>
+
+    <div class="btn-group">
+        <button id="repeat-btn" title="한 곡 반복">🔁</button>
+        <button id="play-pause">▶</button>
+        <button id="stop-btn">⏹</button>
+    </div>
+</div>
+
+<script>
+    const audio = document.getElementById('audio');
+    const playBtn = document.getElementById('play-pause');
+    const repeatBtn = document.getElementById('repeat-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    const progressBar = document.getElementById('progress-bar');
+    const progressContainer = document.getElementById('progress-container');
+    const disc = document.getElementById('disc');
+
+    let isRepeat = false;
+
+    // 재생/일시정지
+    function handlePlay() {
+        if (audio.paused) {
+            audio.play();
+            playBtn.innerText = '⏸';
+            disc.style.animationPlayState = 'running';
+        } else {
+            audio.pause();
+            playBtn.innerText = '▶';
+            disc.style.animationPlayState = 'paused';
+        }
+    }
+
+    // 정지
+    stopBtn.addEventListener('click', () => {
+        audio.pause();
+        audio.currentTime = 0;
+        playBtn.innerText = '▶';
+        disc.style.animationPlayState = 'paused';
+    });
+
+    // 한 곡 반복 토글
+    repeatBtn.addEventListener('click', () => {
+        isRepeat = !isRepeat;
+        audio.loop = isRepeat;
+        repeatBtn.classList.toggle('repeat-on');
+    });
+
+    // 진행 바 업데이트
+    audio.addEventListener('timeupdate', () => {
+        const percent = (audio.currentTime / audio.duration) * 100;
+        progressBar.style.width = `${percent}%`;
+    });
+
+    // 클릭 시 재생 위치 이동
+    progressContainer.addEventListener('click', (e) => {
+        const width = progressContainer.clientWidth;
+        const clickX = e.offsetX;
+        audio.currentTime = (clickX / width) * audio.duration;
+    });
+
+    playBtn.addEventListener('click', handlePlay);
+
+    // 노래 끝나면 상태 업데이트
+    audio.addEventListener('ended', () => {
+        if (!isRepeat) {
+            playBtn.innerText = '▶';
+            disc.style.animationPlayState = 'paused';
+        }
+    });
+</script>
+
+</body>
+</html>
